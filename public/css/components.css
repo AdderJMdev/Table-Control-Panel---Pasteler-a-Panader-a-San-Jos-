@@ -1,0 +1,1006 @@
+/* ==========================================================
+   TARJETAS DE MESA (RF-01, RF-02, RNF-01)
+   Dimensiones mínimas: 140px x 140px, Touch-First
+   ========================================================== */
+.table-card {
+  min-width: var(--table-card-min-size);
+  min-height: var(--table-card-min-size);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  border: 2px solid transparent;
+  color: var(--text-white);
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), filter var(--transition-fast);
+}
+
+.table-card:hover {
+  filter: brightness(1.08);
+}
+
+.table-card:active {
+  transform: scale(0.95);
+}
+
+/* Colores de Fondo Oficiales por Estado (RF-02) */
+.table-card.estado-libre {
+  background: linear-gradient(145deg, var(--color-libre), var(--color-libre-dark));
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.table-card.estado-ocupada {
+  background: linear-gradient(145deg, var(--color-ocupada), var(--color-ocupada-dark));
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.table-card.estado-cuenta {
+  background: linear-gradient(145deg, var(--color-cuenta), var(--color-cuenta-dark));
+  border-color: rgba(255, 255, 255, 0.25);
+  animation: pulse-orange 2s infinite ease-in-out;
+}
+
+.table-card.estado-reservada {
+  background: linear-gradient(145deg, var(--color-reservada), var(--color-reservada-dark));
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+@keyframes pulse-orange {
+  0%, 100% {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), 0 0 0 0 rgba(239, 108, 0, 0.6);
+  }
+  50% {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 0 8px rgba(239, 108, 0, 0);
+  }
+}
+
+/* Encabezado de la Tarjeta */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.card-mesa-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.card-time-elapsed {
+  font-size: 0.72rem;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+/* Centro: Número Grande de Mesa */
+.card-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 6px 0;
+}
+
+.card-number {
+  font-size: 2.8rem;
+  font-weight: 800;
+  line-height: 1;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* Pie de la Tarjeta: Estado y Consumo Opcional (RF-07) */
+.card-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card-state-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.card-consumo-badge {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: center;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.45);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+/* ==========================================================
+   MODAL TÁCTIL DE ACCIÓN (RNF-01, RF-04, RF-05, RF-06, RF-07)
+   Botones de toque mínimo: 60px x 60px
+   ========================================================== */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+}
+
+.modal-backdrop.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-dialog {
+  background-color: var(--bg-surface);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  width: 92%;
+  max-width: 560px;
+  max-height: 92vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  transform: translateY(20px);
+  transition: transform var(--transition-fast);
+}
+
+.modal-backdrop.is-active .modal-dialog {
+  transform: translateY(0);
+}
+
+.modal-header {
+  padding: 16px 20px;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.modal-title-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-mesa-number {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text-white);
+}
+
+.modal-state-badge {
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  color: #fff;
+}
+
+.modal-btn-close {
+  min-width: 48px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background-color: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Sección de Acciones Rápidas Táctiles (mínimo 60px de alto) */
+.actions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.btn-action-touch {
+  min-height: var(--touch-target-min);
+  padding: 12px;
+  border-radius: var(--radius-md);
+  font-size: 1.05rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.btn-action-touch.btn-ocupar {
+  background: linear-gradient(135deg, var(--color-ocupada-light), var(--color-ocupada));
+}
+
+.btn-action-touch.btn-cuenta {
+  background: linear-gradient(135deg, var(--color-cuenta-light), var(--color-cuenta));
+}
+
+.btn-action-touch.btn-liberar {
+  background: linear-gradient(135deg, var(--color-libre-light), var(--color-libre));
+  grid-column: span 2;
+}
+
+.btn-action-touch.btn-reservar {
+  background: linear-gradient(135deg, var(--color-reservada-light), var(--color-reservada));
+  grid-column: span 2;
+}
+
+/* Sección de Consumo Estimado y Notas (RF-07) */
+.info-section {
+  background-color: var(--bg-secondary);
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.info-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.input-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.input-touch {
+  min-height: 48px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 1.1rem;
+  color: var(--text-white);
+  outline: none;
+}
+
+.input-touch:focus {
+  border-color: var(--color-libre-light);
+}
+
+/* Chips Táctiles de Productos Rápidos del Catálogo */
+.quick-products-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 170px;
+  overflow-y: auto;
+  padding: 4px 2px;
+}
+
+.btn-prod-chip {
+  min-height: 48px;
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  color: var(--text-white);
+  flex: 1 1 calc(50% - 8px);
+  max-width: calc(50% - 4px);
+  text-align: left;
+}
+
+.btn-prod-chip:active {
+  background-color: var(--color-libre-dark);
+  border-color: var(--color-libre);
+}
+
+.chip-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.chip-price {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-libre-light);
+}
+
+.btn-clear-touch {
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background-color: rgba(198, 40, 40, 0.2);
+  color: var(--color-ocupada-light);
+  border: 1px solid var(--color-ocupada);
+  border-radius: var(--radius-sm);
+}
+
+.btn-save-info {
+  min-height: 52px;
+  background-color: var(--color-libre);
+  border: 1px solid var(--color-libre-light);
+  border-radius: var(--radius-sm);
+  color: var(--text-white);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.btn-save-info:active {
+  background-color: var(--color-libre-dark);
+}
+
+/* ==========================================================
+   MODAL DE AJUSTES (CONFIGURACIÓN DE MESAS E INVENTARIO)
+   ========================================================== */
+.settings-tabs {
+  display: flex;
+  background-color: var(--bg-secondary);
+  border-bottom: 2px solid var(--border-color);
+  padding: 0 16px;
+  gap: 8px;
+}
+
+.tab-btn {
+  min-height: var(--touch-target-min);
+  padding: 0 18px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  border-bottom: 3px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+}
+
+.tab-btn.active {
+  color: var(--text-white);
+  border-bottom-color: var(--color-libre-light);
+}
+
+.tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+}
+
+/* Stepper de Mesas */
+.stepper-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 12px 0;
+}
+
+.btn-stepper {
+  min-width: 64px;
+  min-height: 64px;
+  border-radius: var(--radius-md);
+  background-color: var(--bg-card);
+  border: 2px solid var(--border-color);
+  color: var(--text-white);
+  font-size: 2rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-stepper:active {
+  background-color: var(--border-color);
+}
+
+.stepper-input {
+  width: 110px;
+  height: 64px;
+  text-align: center;
+  font-size: 2.4rem;
+  font-weight: 800;
+  background-color: var(--bg-surface);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-white);
+}
+
+.presets-container {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.btn-preset-mesas {
+  min-height: 48px;
+  padding: 0 16px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-white);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.btn-preset-mesas:active {
+  background-color: var(--color-libre-dark);
+}
+
+/* Formulario de Agregar Producto */
+.product-form {
+  background-color: var(--bg-secondary);
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.product-form-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 10px;
+}
+
+.select-touch {
+  min-height: 48px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 1rem;
+  color: var(--text-white);
+  outline: none;
+}
+
+.btn-add-prod {
+  min-height: 52px;
+  background-color: var(--color-libre);
+  border: 1px solid var(--color-libre-light);
+  border-radius: var(--radius-sm);
+  color: var(--text-white);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.btn-add-prod:active {
+  background-color: var(--color-libre-dark);
+}
+
+/* Lista de Productos del Inventario */
+.products-list-wrapper {
+  max-height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.product-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.prod-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.prod-item-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-white);
+}
+
+.prod-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.prod-category-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-pill);
+  color: var(--text-secondary);
+}
+
+.prod-item-price {
+  font-size: 0.95rem;
+  color: var(--color-libre-light);
+}
+
+.btn-delete-prod {
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: var(--radius-sm);
+  background-color: rgba(198, 40, 40, 0.15);
+  border: 1px solid var(--color-ocupada);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.btn-delete-prod:active {
+  background-color: var(--color-ocupada);
+}
+
+/* ==========================================================
+   NOTIFICACIONES TOAST TÁCTILES
+   ========================================================== */
+.toast-container {
+  position: fixed;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 300;
+  pointer-events: none;
+}
+
+.toast {
+  background-color: var(--bg-surface);
+  color: var(--text-white);
+  border: 1px solid var(--border-color);
+  border-left: 5px solid var(--color-libre-light);
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  font-size: 0.95rem;
+  font-weight: 600;
+  animation: fadeIn 0.2s ease, fadeOut 0.3s ease 2.7s forwards;
+}
+
+.toast.toast-error {
+  border-left-color: var(--color-ocupada-light);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* ==========================================================
+   PANEL LATERAL OCULTO (DRAWER IZQUIERDO)
+   ========================================================== */
+.brand-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  text-align: left;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.brand-button:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.brand-button:active {
+  transform: scale(0.96);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.brand-menu-indicator {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-left: 8px;
+  opacity: 0.75;
+}
+
+.brand-menu-bar {
+  width: 16px;
+  height: 2px;
+  background-color: var(--text-secondary);
+  border-radius: 2px;
+}
+
+.drawer-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 150;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.drawer-backdrop.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.left-drawer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 320px;
+  max-width: 85vw;
+  height: 100%;
+  background-color: var(--bg-secondary);
+  border-right: 2px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.drawer-backdrop.is-active .left-drawer {
+  transform: translateX(0);
+}
+
+.drawer-header {
+  height: 72px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid var(--border-color);
+  background-color: var(--bg-surface);
+}
+
+.drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.drawer-section-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  margin-bottom: 2px;
+  padding-left: 4px;
+}
+
+.drawer-menu-item {
+  min-height: 60px;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-white);
+  font-weight: 700;
+  font-size: 1.02rem;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+}
+
+.drawer-menu-item:active {
+  background-color: var(--border-color);
+  transform: scale(0.97);
+}
+
+.drawer-item-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  color: var(--color-libre-light);
+}
+
+.drawer-footer {
+  padding: 16px;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-surface);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ==========================================================
+   MODAL DE REGISTRO DE ACCIONES EN FILAS (AUDITORÍA RF-08)
+   ========================================================== */
+.logs-modal-dialog {
+  max-width: 960px !important;
+  width: 95% !important;
+}
+
+.logs-header-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logs-header-row {
+  display: grid;
+  grid-template-columns: 100px 90px 150px 200px 1fr;
+  padding: 12px 18px;
+  background-color: var(--bg-card);
+  border-bottom: 2px solid var(--border-color);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.logs-table-body {
+  max-height: 520px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.log-row {
+  display: grid;
+  grid-template-columns: 100px 90px 150px 200px 1fr;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.9rem;
+  background-color: var(--bg-surface);
+  transition: background-color var(--transition-fast);
+}
+
+.log-row:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+.log-row:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.log-col-time {
+  display: flex;
+  flex-direction: column;
+}
+
+.log-time {
+  font-family: monospace;
+  font-weight: 700;
+  color: var(--text-white);
+  font-size: 0.95rem;
+}
+
+.log-date {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.log-col-mesa {
+  display: flex;
+  align-items: center;
+}
+
+.log-mesa-badge {
+  font-weight: 800;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--text-white);
+}
+
+.log-action-badge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  display: inline-block;
+}
+
+.log-badge-apertura {
+  background-color: rgba(46, 125, 50, 0.25);
+  color: var(--color-libre-light);
+  border: 1px solid var(--color-libre);
+}
+
+.log-badge-cambio {
+  background-color: rgba(239, 108, 0, 0.25);
+  color: var(--color-cuenta-light);
+  border: 1px solid var(--color-cuenta);
+}
+
+.log-badge-liberacion {
+  background-color: rgba(21, 101, 192, 0.25);
+  color: var(--color-reservada-light);
+  border: 1px solid var(--color-reservada);
+}
+
+.log-col-transition {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.log-state-tag {
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  text-transform: uppercase;
+}
+
+.log-arrow {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.log-col-detail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.log-consumo-tag {
+  color: var(--color-libre-light);
+  font-weight: 800;
+  background-color: rgba(76, 175, 80, 0.15);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.log-notas-text {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.log-empty-detail {
+  color: var(--text-muted);
+}
+
+.logs-empty-state {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+}
+
+/* ==========================================================
+   PESTAÑA DE AJUSTES DEL SISTEMA (RELOJ Y TEMA)
+   ========================================================== */
+.system-setting-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.system-card-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.system-card-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.toggle-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.btn-toggle-option {
+  min-height: 64px;
+  padding: 12px 16px;
+  background-color: var(--bg-surface);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
+  color: var(--text-primary);
+  text-align: left;
+  transition: all var(--transition-fast);
+}
+
+.btn-toggle-option:hover {
+  border-color: var(--color-libre-light);
+}
+
+.btn-toggle-option.active {
+  border-color: var(--color-libre);
+  background-color: rgba(46, 125, 50, 0.12);
+  box-shadow: 0 0 0 1px var(--color-libre);
+}
+
+.btn-toggle-option .option-title {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.btn-toggle-option.active .option-title {
+  color: var(--color-libre-light);
+}
+
+.btn-toggle-option .option-example {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}

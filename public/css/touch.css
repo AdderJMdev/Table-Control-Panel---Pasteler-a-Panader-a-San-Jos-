@@ -1,0 +1,36 @@
+/* Optimización Táctil Global (RNF-02) */
+html, body, button, div, span, h1, h2, h3, p {
+  /* Deshabilitar zoom por doble toque */
+  touch-action: manipulation;
+  /* Deshabilitar selección de texto accidental al interactuar con dedos */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  /* Deshabilitar menú emergente contextual al mantener presionado en táctil */
+  -webkit-touch-callout: none;
+  /* Eliminar resaltado azul/gris nativo de navegadores móviles */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Permitir interacción y selección de texto únicamente en campos de entrada */
+input, textarea {
+  -webkit-user-select: auto;
+  user-select: auto;
+  touch-action: auto;
+}
+
+/* Evitar rebote elástico de scroll que descuadre la interfaz táctil */
+body, main, .grid-container, .modal-backdrop {
+  overscroll-behavior: none;
+}
+
+/* Feedback táctil reactivo para cualquier botón interactivo */
+.touch-btn, .table-card {
+  transition: transform var(--transition-fast), filter var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.touch-btn:active, .table-card:active {
+  transform: scale(0.96);
+  filter: brightness(1.15);
+}

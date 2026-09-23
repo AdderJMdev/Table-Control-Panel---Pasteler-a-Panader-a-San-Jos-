@@ -1,0 +1,80 @@
+:root {
+  /* Códigos de Color Oficiales (RF-02) */
+  --color-libre: #2E7D32;
+  --color-libre-light: #4caf50;
+  --color-libre-dark: #1b5e20;
+
+  --color-ocupada: #C62828;
+  --color-ocupada-light: #ef5350;
+  --color-ocupada-dark: #b71c1c;
+
+  --color-cuenta: #EF6C00;
+  --color-cuenta-light: #ffa726;
+  --color-cuenta-dark: #e65100;
+
+  --color-reservada: #1565C0;
+  --color-reservada-light: #42a5f5;
+  --color-reservada-dark: #0d47a1;
+
+  /* Colores de Interfaz (Dark Theme por defecto para POS) */
+  --bg-primary: #121418;
+  --bg-secondary: #1a1e26;
+  --bg-surface: #242933;
+  --bg-card: #2b313d;
+  --border-color: #384152;
+
+  --text-primary: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  --text-white: #ffffff;
+
+  /* Dimensiones Táctiles Mínimas (RNF-01) */
+  --touch-target-min: 60px;
+  --table-card-min-size: 140px;
+
+  /* Sombras y Elevaciones */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+
+  /* Bordes Redondeados Táctiles */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 9999px;
+
+  /* Transiciones */
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==========================================================
+   TEMA CLARO (LIGHT THEME)
+   Optimizado para alto contraste táctil en luz diurna
+   ========================================================== */
+[data-theme="light"] {
+  --bg-primary: #f1f5f9;
+  --bg-secondary: #ffffff;
+  --bg-surface: #ffffff;
+  --bg-card: #f8fafc;
+  --border-color: #cbd5e1;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-white: #0f172a;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.12);
+}
+
+/* En tema claro aseguramos que el texto de las tarjetas de color siga siendo blanco */
+[data-theme="light"] .table-card {
+  color: #ffffff !important;
+}
+
+[data-theme="light"] .table-card .card-mesa-badge,
+[data-theme="light"] .table-card .card-number,
+[data-theme="light"] .table-card .card-state-label {
+  color: #ffffff !important;
+}

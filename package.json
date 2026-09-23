@@ -1,0 +1,17 @@
+{
+  "name": "table-control-panel-san-jose",
+  "version": "1.0.0",
+  "description": "Sistema de Control de Mesas para Cafetería Pastelería San José",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": ["pwa", "touch-first", "sqlite", "restaurant", "pos"],
+  "author": "Pastelería San José",
+  "license": "ISC",
+  "dependencies": {
+    "better-sqlite3": "^11.8.1"
+  }
+}

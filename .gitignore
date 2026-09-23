@@ -1,0 +1,5 @@
+node_modules/
+san_jose.db-shm
+san_jose.db-wal
+.DS_Store
+*.log

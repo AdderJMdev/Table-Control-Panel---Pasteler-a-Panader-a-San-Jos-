@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <!-- Configuración de pantalla táctil y viewport (RNF-01, RNF-02) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Panel de Mesas - Pastelería San José</title>
+  
+  <!-- PWA Meta Tags (RNF-03) -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1e222b">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Mesas San José">
+  <link rel="icon" type="image/svg+xml" href="/assets/icons/icon-192.svg">
+
+  <!-- Estilos CSS Vanilla (RNF-04) -->
+  <link rel="stylesheet" href="/css/reset.css">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/touch.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Encabezado Superior Táctil -->
+    <header class="app-header">
+      <!-- Título e icono interactivo para abrir panel izquierdo oculto -->
+      <button id="brand-button" class="brand-button touch-btn" aria-label="Abrir Menú de Control">
+        <div class="brand-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+            <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+            <line x1="6" y1="1" x2="6" y2="4"></line>
+            <line x1="10" y1="1" x2="10" y2="4"></line>
+            <line x1="14" y1="1" x2="14" y2="4"></line>
+          </svg>
+        </div>
+        <div class="brand-title">
+          <span class="brand-name">Pastelería San José</span>
+          <span class="brand-subtitle">Control de Mesas & Atención</span>
+        </div>
+        <div class="brand-menu-indicator" title="Toca para abrir menú de control">
+          <span class="brand-menu-bar"></span>
+          <span class="brand-menu-bar"></span>
+          <span class="brand-menu-bar"></span>
+        </div>
+      </button>
+
+      <!-- Resumen en vivo de mesas -->
+      <div class="status-summary">
+        <div class="status-pill libre" title="Mesas Libres">
+          <span class="status-indicator-dot"></span>
+          <span>Libres: <strong id="count-libre">0</strong></span>
+        </div>
+        <div class="status-pill ocupada" title="Mesas Ocupadas">
+          <span class="status-indicator-dot"></span>
+          <span>Ocupadas: <strong id="count-ocupada">0</strong></span>
+        </div>
+        <div class="status-pill cuenta" title="Cuentas Pedidas">
+          <span class="status-indicator-dot"></span>
+          <span>Cuenta: <strong id="count-cuenta">0</strong></span>
+        </div>
+      </div>
+
+      <!-- Acciones del Header: Reloj en vivo -->
+      <div class="header-actions">
+        <div class="live-clock" id="live-clock">--:--:--</div>
+      </div>
+    </header>
+
+    <!-- Contenido Principal: Mapa de Mesas en Grid (RF-01, RF-02) -->
+    <main class="main-content">
+      <div id="table-grid" class="grid-container">
+        <!-- Las tarjetas se generan dinámicamente mediante JS -->
+      </div>
+    </main>
+
+    <!-- Barra Inferior de Estado -->
+    <footer class="app-footer">
+      <div class="footer-connection">
+        <span id="online-indicator" class="online-dot"></span>
+        <span id="online-text">Servidor Local Conectado</span>
+      </div>
+      <div>
+        <span>Total Mesas: <strong id="count-total">0</strong></span>
+        <span style="margin: 0 8px;">•</span>
+        <span>Pastelería San José POS</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Panel Oculto Lateral Izquierdo (Drawer) -->
+  <div id="left-drawer-backdrop" class="drawer-backdrop">
+    <aside id="left-drawer" class="left-drawer">
+      <div class="drawer-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="brand-icon" style="width: 40px; height: 40px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+              <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+              <line x1="6" y1="1" x2="6" y2="4"></line>
+              <line x1="10" y1="1" x2="10" y2="4"></line>
+              <line x1="14" y1="1" x2="14" y2="4"></line>
+            </svg>
+          </div>
+          <div>
+            <div style="font-weight: 800; font-size: 1.05rem; color: #fff;">Pastelería San José</div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">Menú de Operaciones</div>
+          </div>
+        </div>
+        <button id="drawer-btn-close" class="modal-btn-close touch-btn" style="min-width: 42px; min-height: 42px; font-size: 1.2rem;" aria-label="Cerrar panel">✕</button>
+      </div>
+
+      <div class="drawer-body">
+        <span class="drawer-section-title">Operaciones de Salón</span>
+        
+        <!-- Botón de Refresco Manual Reacomodado (RF-03) -->
+        <button id="drawer-btn-refresh" class="drawer-menu-item touch-btn">
+          <svg class="refresh-icon drawer-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+          <span>Actualizar Mapa de Mesas</span>
+        </button>
+
+        <!-- Botón para Mostrar Registro de Acciones (Auditoría RF-08) -->
+        <button id="drawer-btn-logs" class="drawer-menu-item touch-btn">
+          <svg class="drawer-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          <span>Registro de Acciones</span>
+        </button>
+
+        <span class="drawer-section-title">Administración</span>
+
+        <!-- Botón de Ajustes Reacomodado -->
+        <button id="drawer-btn-settings" class="drawer-menu-item touch-btn">
+          <svg class="drawer-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span>Ajustes de Mesas & Menú</span>
+        </button>
+      </div>
+
+      <div class="drawer-footer">
+        <div style="font-weight: 700; color: var(--text-white);">Pastelería San José</div>
+        <div>Almacenamiento: SQLite local</div>
+        <div>Touch-First PWA Standalone</div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Modal Táctil de Acciones de Mesa (RF-04, RF-05, RF-06, RF-07, RNF-01) -->
+  <div id="action-modal" class="modal-backdrop">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-box">
+          <span id="modal-mesa-number" class="modal-mesa-number">Mesa --</span>
+          <span id="modal-state-badge" class="modal-state-badge">ESTADO</span>
+        </div>
+        <button id="modal-btn-close" class="modal-btn-close touch-btn" aria-label="Cerrar modal">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Botones de Acción Táctiles (Mínimo 60px) -->
+        <div class="actions-grid">
+          <button id="btn-action-ocupar" class="btn-action-touch btn-ocupar touch-btn">
+            🟢 Ocupar Mesa
+          </button>
+          <button id="btn-action-cuenta" class="btn-action-touch btn-cuenta touch-btn">
+            🟠 Pedir Cuenta
+          </button>
+          <button id="btn-action-liberar" class="btn-action-touch btn-liberar touch-btn">
+            ✓ Liberar Mesa
+          </button>
+          <button id="btn-action-reservar" class="btn-action-touch btn-reservar touch-btn">
+            🔵 Marcar Reservada
+          </button>
+        </div>
+
+        <!-- Consumo Estimado Referencial y Menú Rápido (RF-07) -->
+        <div class="info-section">
+          <div class="info-section-header">
+            <span class="input-label">Catálogo de Productos Rápidos:</span>
+            <button type="button" id="btn-clear-consumo" class="btn-clear-touch touch-btn">
+              ↺ Reiniciar
+            </button>
+          </div>
+
+          <!-- Contenedor dinámico de chips de productos del catálogo -->
+          <div id="modal-quick-products" class="quick-products-container">
+            <!-- Rellenado dinámicamente desde el inventario -->
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+            <label class="input-label" for="modal-input-consumo">
+              Consumo Total Estimado (S/.):
+            </label>
+            <span style="font-size: 0.75rem; color: var(--text-secondary);">Opcional a digitar</span>
+          </div>
+
+          <input 
+            type="number" 
+            id="modal-input-consumo" 
+            class="input-touch" 
+            placeholder="0.00" 
+            step="0.50" 
+            min="0"
+          >
+          
+          <!-- Atajos de incremento numérico rápido -->
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn-quick-amount touch-btn" data-add="10" style="flex: 1; padding: 10px; background: var(--bg-card); border-radius: var(--radius-sm); font-size: 0.88rem; font-weight: 700; border: 1px solid var(--border-color); color: #fff;">+ S/ 10</button>
+            <button type="button" class="btn-quick-amount touch-btn" data-add="20" style="flex: 1; padding: 10px; background: var(--bg-card); border-radius: var(--radius-sm); font-size: 0.88rem; font-weight: 700; border: 1px solid var(--border-color); color: #fff;">+ S/ 20</button>
+            <button type="button" class="btn-quick-amount touch-btn" data-add="50" style="flex: 1; padding: 10px; background: var(--bg-card); border-radius: var(--radius-sm); font-size: 0.88rem; font-weight: 700; border: 1px solid var(--border-color); color: #fff;">+ S/ 50</button>
+          </div>
+
+          <label class="input-label" for="modal-input-notas" style="margin-top: 4px;">
+            Detalle de Consumo / Notas:
+          </label>
+          <input 
+            type="text" 
+            id="modal-input-notas" 
+            class="input-touch" 
+            placeholder="Ej. Capuchino, Croissant, 3 personas..."
+          >
+
+          <button id="btn-save-info" class="btn-save-info touch-btn" type="button">
+            💾 Guardar Consumo y Notas
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Registro de Acciones en Filas (Auditoría RF-08) -->
+  <div id="logs-modal" class="modal-backdrop">
+    <div class="modal-dialog logs-modal-dialog">
+      <div class="modal-header">
+        <div class="logs-header-bar">
+          <span style="font-size: 1.4rem; font-weight: 800; color: var(--text-white);">📋 Registro de Acciones</span>
+          <span id="logs-count-label" style="font-size: 0.82rem; font-weight: 700; color: var(--text-secondary); background: var(--bg-surface); padding: 4px 12px; border-radius: var(--radius-pill); border: 1px solid var(--border-color);">-- eventos</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button id="logs-btn-refresh" class="modal-btn-close touch-btn" style="font-size: 1.1rem; width: 44px; height: 44px;" title="Actualizar registro">🔄</button>
+          <button id="logs-btn-close" class="modal-btn-close touch-btn" aria-label="Cerrar registro">✕</button>
+        </div>
+      </div>
+
+      <!-- Encabezado de Columnas en Filas -->
+      <div class="logs-header-row">
+        <div>Hora / Fecha</div>
+        <div>Mesa</div>
+        <div>Acción</div>
+        <div>Transición</div>
+        <div>Consumo / Detalle</div>
+      </div>
+
+      <!-- Cuerpo con Filas de Auditoría -->
+      <div id="logs-table-body" class="logs-table-body">
+        <!-- Filas dinámicas generadas desde SQLite -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Ajustes: Configuración de Mesas e Inventario -->
+  <div id="settings-modal" class="modal-backdrop">
+    <div class="modal-dialog" style="max-width: 600px;">
+      <div class="modal-header">
+        <div class="modal-title-box">
+          <span style="font-size: 1.5rem; font-weight: 800; color: var(--text-white);">⚙️ Ajustes del Sistema</span>
+        </div>
+        <button id="settings-btn-close" class="modal-btn-close touch-btn" aria-label="Cerrar ajustes">✕</button>
+      </div>
+
+      <!-- Navegación de Pestañas Táctiles -->
+      <div class="settings-tabs">
+        <button type="button" id="tab-btn-mesas" class="tab-btn active touch-btn">
+          🪑 Mesas (Aforo)
+        </button>
+        <button type="button" id="tab-btn-productos" class="tab-btn touch-btn">
+          🍰 Inventario de Menú
+        </button>
+        <button type="button" id="tab-btn-sistema" class="tab-btn touch-btn">
+          ⚙️ Sistema
+        </button>
+      </div>
+
+      <!-- Pestaña 1: Configurar Número de Mesas -->
+      <div id="tab-content-mesas" class="tab-content">
+        <div style="background-color: var(--bg-secondary); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color); text-align: center;">
+          <span class="input-label" style="display: block; margin-bottom: 8px;">Cantidad Total de Mesas en la Cafetería</span>
+          
+          <div class="stepper-container">
+            <button type="button" id="btn-mesas-minus" class="btn-stepper touch-btn" aria-label="Disminuir mesas">−</button>
+            <input type="number" id="input-total-mesas" class="stepper-input" min="1" max="100" value="16">
+            <button type="button" id="btn-mesas-plus" class="btn-stepper touch-btn" aria-label="Aumentar mesas">+</button>
+          </div>
+
+          <!-- Presets rápidos de mesas -->
+          <div class="presets-container">
+            <button type="button" class="btn-preset-mesas touch-btn" data-mesas="10">10 Mesas</button>
+            <button type="button" class="btn-preset-mesas touch-btn" data-mesas="12">12 Mesas</button>
+            <button type="button" class="btn-preset-mesas touch-btn" data-mesas="16">16 Mesas</button>
+            <button type="button" class="btn-preset-mesas touch-btn" data-mesas="20">20 Mesas</button>
+          </div>
+
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 10px;">
+            Al reducir mesas, el sistema comprobará que no tengan consumos activos.
+          </p>
+        </div>
+
+        <button type="button" id="btn-save-mesas-config" class="btn-save-info touch-btn" style="min-height: 56px;">
+          💾 Guardar Aforo de Mesas
+        </button>
+      </div>
+
+      <!-- Pestaña 2: Inventario de Productos Básicos -->
+      <div id="tab-content-productos" class="tab-content" style="display: none;">
+        <!-- Formulario para agregar producto -->
+        <form id="form-add-product" class="product-form">
+          <span class="input-label">Agregar Producto al Catálogo Rápido:</span>
+          
+          <div class="product-form-row">
+            <input 
+              type="text" 
+              id="input-prod-nombre" 
+              class="input-touch" 
+              placeholder="Nombre (ej. Muffin de Naranja)"
+              required
+            >
+            <input 
+              type="number" 
+              id="input-prod-precio" 
+              class="input-touch" 
+              placeholder="Precio (S/.)" 
+              step="0.50" 
+              min="0"
+              required
+            >
+          </div>
+
+          <select id="select-prod-categoria" class="select-touch">
+            <option value="Bebidas Calientes">☕ Bebidas Calientes</option>
+            <option value="Bebidas Frías">🥤 Bebidas Frías</option>
+            <option value="Pastelería">🍰 Pastelería & Tortas</option>
+            <option value="Salados">🥪 Salados & Empanadas</option>
+            <option value="General">⭐ General</option>
+          </select>
+
+          <button type="button" id="btn-add-product" class="btn-add-prod touch-btn">
+            ＋ Registrar Producto
+          </button>
+        </form>
+
+        <span class="input-label" style="margin-top: 4px;">Productos Disponibles en el Menú:</span>
+
+        <!-- Listado con scroll de productos -->
+        <div class="products-list-wrapper">
+          <div id="products-list-container">
+            <!-- Generado dinámicamente -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Pestaña 3: Configuración del Sistema (Reloj y Tema) -->
+      <div id="tab-content-sistema" class="tab-content" style="display: none;">
+        <div class="system-setting-card">
+          <span class="system-card-title">⏰ Formato del Reloj</span>
+          <p class="system-card-desc">Selecciona cómo deseas visualizar la hora en la barra superior:</p>
+          <div class="toggle-options-grid">
+            <button type="button" id="btn-clock-24h" class="btn-toggle-option touch-btn active">
+              <span class="option-title">24 Horas</span>
+              <span class="option-example">Ej. 19:40:35</span>
+            </button>
+            <button type="button" id="btn-clock-12h" class="btn-toggle-option touch-btn">
+              <span class="option-title">12 Horas (AM / PM)</span>
+              <span class="option-example">Ej. 07:40:35 PM</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="system-setting-card">
+          <span class="system-card-title">🎨 Tema Visual de la Interfaz</span>
+          <p class="system-card-desc">Personaliza el contraste visual según la iluminación de tu local:</p>
+          <div class="toggle-options-grid">
+            <button type="button" id="btn-theme-dark" class="btn-toggle-option touch-btn active">
+              <span class="option-title">🌙 Modo Oscuro</span>
+              <span class="option-example">Recomendado para entornos POS</span>
+            </button>
+            <button type="button" id="btn-theme-light" class="btn-toggle-option touch-btn">
+              <span class="option-title">☀️ Modo Claro</span>
+              <span class="option-example">Luz natural / Alto brillo</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenedor dinámico de notificaciones flotantes (Toast) -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Script principal ES6 (RNF-04) -->
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>

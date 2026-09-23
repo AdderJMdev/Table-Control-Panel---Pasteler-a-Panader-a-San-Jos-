@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <rect width="192" height="192" rx="36" fill="#1e222b"/>
+  <rect x="24" y="24" width="144" height="144" rx="24" fill="#2E7D32" opacity="0.15"/>
+  <!-- Mesa central -->
+  <ellipse cx="96" cy="115" rx="55" ry="18" fill="#4caf50" opacity="0.4"/>
+  <path d="M48 95 Q96 75 144 95 L138 108 Q96 90 54 108 Z" fill="#2E7D32"/>
+  <path d="M92 108 L92 145 L100 145 L100 108 Z" fill="#1b5e20"/>
+  <!-- Taza de café / Pastelería -->
+  <path d="M80 62 C80 50 112 50 112 62 L110 82 C110 88 106 92 96 92 C86 92 82 88 82 82 Z" fill="#ffffff"/>
+  <path d="M110 66 C118 66 122 72 120 78 C118 82 112 84 110 82" stroke="#ffffff" stroke-width="3" fill="none"/>
+  <!-- Vapor de café -->
+  <path d="M88 44 Q91 38 88 32" stroke="#ffb74d" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <path d="M96 42 Q99 36 96 30" stroke="#ffb74d" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <path d="M104 44 Q107 38 104 32" stroke="#ffb74d" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+</svg>
