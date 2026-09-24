@@ -1,6 +1,9 @@
 import { mesasController } from '../controllers/mesasController.js';
 import { logsController } from '../controllers/logsController.js';
 import { productosController } from '../controllers/productosController.js';
+import { authController } from '../controllers/authController.js';
+import { configController } from '../controllers/configController.js';
+import { realtime } from '../realtime.js';
 
 /**
  * Helper para parsear JSON de la petición HTTP nativa
@@ -77,6 +80,7 @@ export async function handleApiRequest(req, res, url) {
       const id = parseInt(estadoMatch[1], 10);
       const body = await parseJsonBody(req);
       const updated = mesasController.updateEstado(id, body);
+      realtime.broadcast({ type: 'mesas:updated', data: updated });
       return sendJson(res, 200, {
         success: true,
         message: `Mesa ${updated.numero} actualizada a estado ${updated.estado}.`,
@@ -89,6 +93,7 @@ export async function handleApiRequest(req, res, url) {
     if (method === 'POST' && liberarMatch) {
       const id = parseInt(liberarMatch[1], 10);
       const updated = mesasController.liberar(id);
+      realtime.broadcast({ type: 'mesas:updated', data: updated });
       return sendJson(res, 200, {
         success: true,
         message: `Mesa ${updated.numero} liberada con éxito.`,
@@ -125,6 +130,7 @@ export async function handleApiRequest(req, res, url) {
     if (method === 'PUT' && pathname === '/api/config/mesas') {
       const body = await parseJsonBody(req);
       const updatedMesas = mesasController.setTableCount(body.total);
+      realtime.broadcast({ type: 'mesas:set', data: updatedMesas });
       return sendJson(res, 200, {
         success: true,
         message: `Aforo actualizado exitosamente a ${updatedMesas.length} mesas.`,
@@ -161,6 +167,7 @@ export async function handleApiRequest(req, res, url) {
     if (method === 'POST' && pathname === '/api/productos') {
       const body = await parseJsonBody(req);
       const nuevo = productosController.create(body);
+      realtime.broadcast({ type: 'productos:updated', data: { action: 'create', producto: nuevo } });
       return sendJson(res, 201, {
         success: true,
         message: `Producto "${nuevo.nombre}" creado exitosamente.`,
@@ -173,6 +180,7 @@ export async function handleApiRequest(req, res, url) {
       const id = parseInt(prodIdMatch[1], 10);
       const body = await parseJsonBody(req);
       const updated = productosController.update(id, body);
+      realtime.broadcast({ type: 'productos:updated', data: { action: 'update', producto: updated } });
       return sendJson(res, 200, {
         success: true,
         message: `Producto "${updated.nombre}" actualizado exitosamente.`,
@@ -184,6 +192,7 @@ export async function handleApiRequest(req, res, url) {
     if (method === 'DELETE' && prodIdMatch) {
       const id = parseInt(prodIdMatch[1], 10);
       const resDelete = productosController.delete(id);
+      realtime.broadcast({ type: 'productos:updated', data: { action: 'delete', producto: resDelete.deleted } });
       return sendJson(res, 200, {
         success: true,
         message: `Producto eliminado exitosamente.`,
@@ -200,6 +209,62 @@ export async function handleApiRequest(req, res, url) {
       const limit = searchParams.get('limit') || 50;
       const logs = logsController.getRecentLogs(limit);
       return sendJson(res, 200, { success: true, data: logs });
+    }
+
+    // ==========================================
+    // MÓDULO DE SEGURIDAD (ACCESO POR PIN)
+    // ==========================================
+
+    // POST /api/auth/pin -> Verifica el PIN de acceso/desbloqueo de la app.
+    // Acepta la clave maestra en el mismo campo para recuperar el acceso.
+    if (method === 'POST' && pathname === '/api/auth/pin') {
+      const body = await parseJsonBody(req);
+      if (authController.verify(body.pin)) {
+        return sendJson(res, 200, { success: true, data: true });
+      }
+      return sendJson(res, 401, { success: false, error: 'PIN incorrecto.' });
+    }
+
+    // POST /api/auth/master -> Autentica con la clave maestra (autorización admin)
+    if (method === 'POST' && pathname === '/api/auth/master') {
+      const body = await parseJsonBody(req);
+      if (authController.verifyMaster(body.masterKey)) {
+        return sendJson(res, 200, { success: true, data: true });
+      }
+      return sendJson(res, 401, { success: false, error: 'Clave maestra incorrecta.' });
+    }
+
+    // PUT /api/auth/pin -> Cambia la clave de acceso autenticando con la clave maestra
+    if (method === 'PUT' && pathname === '/api/auth/pin') {
+      const body = await parseJsonBody(req);
+      const result = authController.changePin(body);
+      return sendJson(res, 200, {
+        success: true,
+        message: 'Clave de acceso actualizada correctamente.',
+        data: result
+      });
+    }
+
+    // ==========================================
+    // MÓDULO DE ACCESOS RÁPIDOS (MONTOS RÁPIDOS)
+    // ==========================================
+
+    // GET /api/config/quick-amounts -> Montos de los botones + rápidos
+    if (method === 'GET' && pathname === '/api/config/quick-amounts') {
+      const amounts = configController.getQuickAmounts();
+      return sendJson(res, 200, { success: true, data: amounts });
+    }
+
+    // PUT /api/config/quick-amounts -> Actualiza los montos rápidos
+    if (method === 'PUT' && pathname === '/api/config/quick-amounts') {
+      const body = await parseJsonBody(req);
+      const amounts = configController.setQuickAmounts(body.amounts);
+      realtime.broadcast({ type: 'quick-amounts:set', data: amounts });
+      return sendJson(res, 200, {
+        success: true,
+        message: 'Montos de acceso rápido actualizados correctamente.',
+        data: amounts
+      });
     }
 
     // Si no coincide ninguna ruta /api

@@ -1,6 +1,7 @@
 import { api } from '../api.js';
 import { store } from '../state.js';
 import { showToast } from './actionModal.js';
+import { pinScreen } from './pinScreen.js';
 
 /**
  * Modal de Ajustes: Configuración de Mesas, Inventario de Productos y Sistema (Touch-First)
@@ -10,6 +11,18 @@ export class SettingsModal {
     this.currentTotal = 16;
     this.initElements();
     this.bindEvents();
+
+    // Actualizar la lista de productos en vivo si el modal está abierto
+    store.subscribe(() => {
+      if (this.isVisible()) {
+        this.renderProductsList();
+        this.renderQuickAmountsEdit();
+      }
+    });
+  }
+
+  isVisible() {
+    return !!(this.backdrop && this.backdrop.classList.contains('is-active'));
   }
 
   initElements() {
@@ -20,10 +33,14 @@ export class SettingsModal {
     this.tabBtnMesas = document.getElementById('tab-btn-mesas');
     this.tabBtnProductos = document.getElementById('tab-btn-productos');
     this.tabBtnSistema = document.getElementById('tab-btn-sistema');
+    this.tabBtnSeguridad = document.getElementById('tab-btn-seguridad');
+    this.tabBtnRapidos = document.getElementById('tab-btn-rapidos');
 
     this.tabContentMesas = document.getElementById('tab-content-mesas');
     this.tabContentProductos = document.getElementById('tab-content-productos');
     this.tabContentSistema = document.getElementById('tab-content-sistema');
+    this.tabContentSeguridad = document.getElementById('tab-content-seguridad');
+    this.tabContentRapidos = document.getElementById('tab-content-rapidos');
 
     // Sección Mesas
     this.inputTotalMesas = document.getElementById('input-total-mesas');
@@ -45,6 +62,15 @@ export class SettingsModal {
     this.btnClock12h = document.getElementById('btn-clock-12h');
     this.btnThemeDark = document.getElementById('btn-theme-dark');
     this.btnThemeLight = document.getElementById('btn-theme-light');
+
+    // Sección Seguridad (Cambio de Clave de Acceso)
+    this.inputNewPin = document.getElementById('input-new-pin');
+    this.inputConfirmPin = document.getElementById('input-confirm-pin');
+    this.btnSavePin = document.getElementById('btn-save-pin');
+
+    // Sección Accesos Rápidos (Montos de los Botones +)
+    this.quickAmountEditList = document.getElementById('quick-amount-edit-list');
+    this.btnSaveQuickAmounts = document.getElementById('btn-save-quick-amounts');
   }
 
   bindEvents() {
@@ -70,6 +96,17 @@ export class SettingsModal {
     }
     if (this.tabBtnSistema) {
       this.tabBtnSistema.addEventListener('click', () => this.switchTab('sistema'));
+    }
+    if (this.tabBtnSeguridad) {
+      this.tabBtnSeguridad.addEventListener('click', () => this.switchTab('seguridad'));
+    }
+    if (this.tabBtnRapidos) {
+      this.tabBtnRapidos.addEventListener('click', () => this.switchTab('rapidos'));
+    }
+
+    // Guardar Montos Rápidos
+    if (this.btnSaveQuickAmounts) {
+      this.btnSaveQuickAmounts.addEventListener('click', () => this.handleSaveQuickAmounts());
     }
 
     // Stepper de Mesas
@@ -106,6 +143,11 @@ export class SettingsModal {
     // Guardar Configuración de Mesas
     if (this.btnSaveMesas) {
       this.btnSaveMesas.addEventListener('click', () => this.handleSaveMesasConfig());
+    }
+
+    // Cambiar Clave de Acceso (autenticando con clave maestra)
+    if (this.btnSavePin) {
+      this.btnSavePin.addEventListener('click', () => this.handleSavePin());
     }
 
     // Formulario de Agregar Producto al Catálogo
@@ -163,10 +205,14 @@ export class SettingsModal {
     this.tabBtnMesas.classList.remove('active');
     this.tabBtnProductos.classList.remove('active');
     this.tabBtnSistema.classList.remove('active');
+    this.tabBtnSeguridad.classList.remove('active');
+    this.tabBtnRapidos.classList.remove('active');
 
     this.tabContentMesas.style.display = 'none';
     this.tabContentProductos.style.display = 'none';
     this.tabContentSistema.style.display = 'none';
+    this.tabContentSeguridad.style.display = 'none';
+    this.tabContentRapidos.style.display = 'none';
 
     if (tab === 'mesas') {
       this.tabBtnMesas.classList.add('active');
@@ -179,6 +225,13 @@ export class SettingsModal {
       this.tabBtnSistema.classList.add('active');
       this.tabContentSistema.style.display = 'flex';
       this.updateSystemControls();
+    } else if (tab === 'seguridad') {
+      this.tabBtnSeguridad.classList.add('active');
+      this.tabContentSeguridad.style.display = 'flex';
+    } else if (tab === 'rapidos') {
+      this.tabBtnRapidos.classList.add('active');
+      this.tabContentRapidos.style.display = 'flex';
+      this.renderQuickAmountsEdit();
     }
   }
 
@@ -257,6 +310,48 @@ export class SettingsModal {
       if (this.btnSaveMesas) {
         this.btnSaveMesas.disabled = false;
         this.btnSaveMesas.textContent = '💾 Guardar Aforo de Mesas';
+      }
+    }
+  }
+
+  async handleSavePin() {
+    const nueva = this.inputNewPin?.value?.trim() || '';
+    const confirmacion = this.inputConfirmPin?.value?.trim() || '';
+
+    if (!/^\d{6}$/.test(nueva)) {
+      showToast('La nueva clave debe tener exactamente 6 dígitos.', true);
+      return;
+    }
+    if (nueva !== confirmacion) {
+      showToast('Las claves no coinciden. Revíselas.', true);
+      return;
+    }
+
+    // Autenticar con la clave maestra antes de autorizar el cambio
+    const masterKey = await pinScreen.requestPin({
+      subtitle: 'Ingrese su clave maestra para autorizar el cambio',
+      validate: (key) => api.verifyMaster(key).then(() => true),
+      cancellable: true
+    });
+
+    if (!masterKey) {
+      showToast('Cambio de clave cancelado.');
+      return;
+    }
+
+    try {
+      this.btnSavePin.disabled = true;
+      this.btnSavePin.textContent = 'Guardando...';
+      await api.changePin(masterKey, nueva);
+      showToast('✓ Clave de acceso actualizada.');
+      if (this.inputNewPin) this.inputNewPin.value = '';
+      if (this.inputConfirmPin) this.inputConfirmPin.value = '';
+    } catch (err) {
+      showToast(`Error al cambiar clave: ${err.message}`, true);
+    } finally {
+      if (this.btnSavePin) {
+        this.btnSavePin.disabled = false;
+        this.btnSavePin.textContent = '🔐 Cambiar Clave de Acceso';
       }
     }
   }
@@ -360,6 +455,93 @@ export class SettingsModal {
       this.renderProductsList();
     } catch (err) {
       showToast(`Error al crear producto: ${err.message}`, true);
+    }
+  }
+
+  /* ========================================
+     SECCIÓN: ACCESOS RÁPIDOS (MONTOS +)
+     ======================================== */
+
+  renderQuickAmountsEdit() {
+    if (!this.quickAmountEditList) return;
+
+    const amounts = store.getState().quickAmounts || [];
+
+    this.quickAmountEditList.innerHTML = '';
+    const fragment = document.createDocumentFragment();
+
+    for (let i = 0; i < 3; i++) {
+      const row = document.createElement('div');
+      row.className = 'quick-amount-edit-row';
+
+      const label = document.createElement('span');
+      label.className = 'quick-amount-edit-label';
+      label.textContent = `Botón ${i + 1}`;
+
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.className = 'input-touch quick-amount-input';
+      input.min = '0';
+      input.max = '999';
+      input.step = '0.50';
+      input.inputMode = 'decimal';
+      input.placeholder = 'S/ 0.00';
+      input.dataset.idx = String(i);
+      input.value = amounts[i] !== undefined ? Number(amounts[i]) : '';
+      input.id = `quick-amount-input-${i}`;
+
+      const suffix = document.createElement('span');
+      suffix.className = 'quick-amount-edit-suffix';
+      suffix.textContent = 'S/';
+
+      row.appendChild(suffix);
+      row.appendChild(input);
+      row.appendChild(label);
+
+      fragment.appendChild(row);
+    }
+
+    this.quickAmountEditList.appendChild(fragment);
+  }
+
+  async handleSaveQuickAmounts() {
+    const inputs = this.quickAmountEditList
+      ? this.quickAmountEditList.querySelectorAll('.quick-amount-input')
+      : [];
+
+    const amounts = [];
+    inputs.forEach((input) => {
+      const raw = input.value.trim();
+      if (raw === '') return;
+      const num = Number(raw);
+      if (isNaN(num) || num < 0 || num > 999) {
+        showToast('Ingresa montos entre 0 y 999.', true);
+        return;
+      }
+      amounts.push(Math.round(num * 100) / 100);
+    });
+    if (amounts.length === 0) return;
+    if (new Set(amounts).size !== amounts.length) {
+      showToast('Los montos deben ser diferentes entre sí.', true);
+      return;
+    }
+
+    try {
+      if (this.btnSaveQuickAmounts) {
+        this.btnSaveQuickAmounts.disabled = true;
+        this.btnSaveQuickAmounts.textContent = 'Guardando...';
+      }
+      const saved = await api.setQuickAmounts(amounts);
+      store.setQuickAmounts(saved);
+      this.renderQuickAmountsEdit();
+      showToast('✓ Montos de acceso rápido actualizados.');
+    } catch (err) {
+      showToast(`Error al guardar montos: ${err.message}`, true);
+    } finally {
+      if (this.btnSaveQuickAmounts) {
+        this.btnSaveQuickAmounts.disabled = false;
+        this.btnSaveQuickAmounts.textContent = '💾 Guardar Montos Rápidos';
+      }
     }
   }
 }

@@ -217,10 +217,8 @@
           >
           
           <!-- Atajos de incremento numérico rápido -->
-          <div style="display: flex; gap: 8px;">
-            <button type="button" class="btn-quick-amount touch-btn" data-add="10" style="flex: 1; padding: 10px; background: var(--bg-card); border-radius: var(--radius-sm); font-size: 0.88rem; font-weight: 700; border: 1px solid var(--border-color); color: #fff;">+ S/ 10</button>
-            <button type="button" class="btn-quick-amount touch-btn" data-add="20" style="flex: 1; padding: 10px; background: var(--bg-card); border-radius: var(--radius-sm); font-size: 0.88rem; font-weight: 700; border: 1px solid var(--border-color); color: #fff;">+ S/ 20</button>
-            <button type="button" class="btn-quick-amount touch-btn" data-add="50" style="flex: 1; padding: 10px; background: var(--bg-card); border-radius: var(--radius-sm); font-size: 0.88rem; font-weight: 700; border: 1px solid var(--border-color); color: #fff;">+ S/ 50</button>
+          <div id="modal-quick-amounts" class="quick-amounts-container">
+            <!-- Rellenado dinámicamente desde los montos configurados -->
           </div>
 
           <label class="input-label" for="modal-input-notas" style="margin-top: 4px;">
@@ -291,6 +289,12 @@
         </button>
         <button type="button" id="tab-btn-sistema" class="tab-btn touch-btn">
           ⚙️ Sistema
+        </button>
+        <button type="button" id="tab-btn-seguridad" class="tab-btn touch-btn">
+          🔒 Seguridad
+        </button>
+        <button type="button" id="tab-btn-rapidos" class="tab-btn touch-btn">
+          ⚡ Acc. Rápidos
         </button>
       </div>
 
@@ -403,6 +407,104 @@
           </div>
         </div>
       </div>
+
+      <!-- Pestaña 4: Seguridad (Cambio de Clave de Acceso) -->
+      <div id="tab-content-seguridad" class="tab-content" style="display: none;">
+        <div class="system-setting-card">
+          <span class="system-card-title">🔒 Clave de Acceso (PIN)</span>
+          <p class="system-card-desc">
+            Clave de 6 dígitos que se solicita al abrir el panel. Para cambiarla deberás
+            autenticarte con la <strong>clave maestra</strong>.
+          </p>
+
+          <div class="pin-change-form">
+            <span class="input-label">Nueva clave (6 dígitos)</span>
+            <input
+              type="password"
+              id="input-new-pin"
+              class="input-touch"
+              maxlength="6"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              autocomplete="off"
+              placeholder="••••••"
+            >
+
+            <span class="input-label">Confirmar nueva clave</span>
+            <input
+              type="password"
+              id="input-confirm-pin"
+              class="input-touch"
+              maxlength="6"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              autocomplete="off"
+              placeholder="••••••"
+            >
+
+            <button type="button" id="btn-save-pin" class="btn-save-info touch-btn">
+              🔐 Cambiar Clave de Acceso
+            </button>
+          </div>
+
+          <p class="system-card-desc" style="margin-top: 8px;">
+            Si olvidas tu clave, ingresa la <strong>clave maestra</strong>
+            en la pantalla de inicio para recuperar el acceso.
+          </p>
+        </div>
+      </div>
+
+      <!-- Pestaña 5: Accesos Rápidos (Montos de los Botones +) -->
+      <div id="tab-content-rapidos" class="tab-content" style="display: none;">
+        <div class="system-setting-card">
+          <span class="system-card-title">⚡ Montos de Acceso Rápido</span>
+          <p class="system-card-desc">
+            Valores que se suman al consumo de la mesa al tocar los botones
+            <strong>+ S/</strong> en la ventana de la mesa.
+          </p>
+
+          <div id="quick-amount-edit-list" class="quick-amount-edit-list">
+            <!-- Filas de edición generadas dinámicamente -->
+          </div>
+
+          <button type="button" id="btn-save-quick-amounts" class="btn-save-info touch-btn">
+            💾 Guardar Montos Rápidos
+          </button>
+
+          <p class="system-card-desc" style="margin-top: 8px;">
+            Puedes configurar entre 1 y 3 montos (S/.). Deja vacío un campo para ocultar ese botón.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pantalla de Bloqueo por PIN (Acceso al Panel) -->
+  <div id="pin-screen" class="pin-screen" aria-hidden="true">
+    <div id="pin-screen-card" class="pin-screen-card">
+      <div class="pin-brand">
+        <div class="brand-icon">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+            <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+            <line x1="6" y1="1" x2="6" y2="4"></line>
+            <line x1="10" y1="1" x2="10" y2="4"></line>
+            <line x1="14" y1="1" x2="14" y2="4"></line>
+          </svg>
+        </div>
+        <span class="pin-title">Pastelería San José</span>
+      </div>
+      <p id="pin-subtitle" class="pin-subtitle">Ingrese su PIN de acceso</p>
+
+      <div id="pin-dots" class="pin-dots"></div>
+      <p id="pin-error" class="pin-error" role="alert"></p>
+
+      <div id="pin-keypad" class="pin-keypad"></div>
+
+      <button type="button" id="pin-btn-cancel" class="pin-cancel-btn touch-btn" style="display: none;">
+        ✕ Cancelar
+      </button>
+      <p class="pin-hint">La clave maestra también permite recuperar el acceso</p>
     </div>
   </div>
 

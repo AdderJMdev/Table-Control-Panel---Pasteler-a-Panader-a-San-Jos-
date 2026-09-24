@@ -50,8 +50,8 @@ export class ActionModal {
     this.inputNotas = document.getElementById('modal-input-notas');
     this.btnSaveInfo = document.getElementById('btn-save-info');
     this.btnClearConsumo = document.getElementById('btn-clear-consumo');
-    this.quickButtons = document.querySelectorAll('.btn-quick-amount');
     this.quickProductsContainer = document.getElementById('modal-quick-products');
+    this.quickAmountsContainer = document.getElementById('modal-quick-amounts');
   }
 
   bindEvents() {
@@ -101,23 +101,24 @@ export class ActionModal {
       });
     }
 
-    // Botones rápidos de incremento de consumo (+10, +20, +50)
-    if (this.quickButtons) {
-      this.quickButtons.forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const val = Number(btn.getAttribute('data-add') || 0);
-          const current = Number(this.inputConsumo.value || 0);
-          this.inputConsumo.value = (current + val).toFixed(2);
-        });
-      });
-    }
-
     // Tecla Escape para cerrar
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && this.backdrop?.classList.contains('is-active')) {
         this.close();
       }
     });
+
+    // Actualizar botones rápidos en vivo si otro dispositivo cambia los montos
+    store.subscribe(() => {
+      if (this.isVisible()) {
+        this.renderQuickProducts();
+        this.renderQuickAmounts();
+      }
+    });
+  }
+
+  isVisible() {
+    return !!(this.backdrop && this.backdrop.classList.contains('is-active'));
   }
 
   open(mesa) {
@@ -148,10 +149,51 @@ export class ActionModal {
     // Visibilidad condicional de botones según estado actual
     this.adjustButtonVisibility(mesa.estado);
 
-    // Cargar productos rápidos del inventario
+    // Cargar productos rápidos del inventario y montos rápidos
     this.renderQuickProducts();
+    this.renderQuickAmounts();
 
     this.backdrop.classList.add('is-active');
+  }
+
+  renderQuickAmounts() {
+    if (!this.quickAmountsContainer) return;
+
+    const amounts = store.getState().quickAmounts || [];
+
+    this.quickAmountsContainer.innerHTML = '';
+    if (amounts.length === 0) {
+      this.quickAmountsContainer.innerHTML = `
+        <div style="font-size: 0.8rem; color: var(--text-secondary); padding: 4px 0;">
+          No hay montos rápidos configurados (Ajustes → ⚡ Acc. Rápidos).
+        </div>
+      `;
+      return;
+    }
+
+    const formatter = new Intl.NumberFormat('es-PE', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    });
+
+    const fragment = document.createDocumentFragment();
+    amounts.forEach((amount) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn-quick-amount touch-btn';
+      btn.textContent = `+ S/ ${formatter.format(amount)}`;
+
+      btn.addEventListener('click', () => {
+        const current = Number(this.inputConsumo.value || 0);
+        const next = current + Number(amount);
+        this.inputConsumo.value = next.toFixed(2);
+        showToast(`+ S/ ${formatter.format(amount)}`);
+      });
+
+      fragment.appendChild(btn);
+    });
+
+    this.quickAmountsContainer.appendChild(fragment);
   }
 
   renderQuickProducts() {

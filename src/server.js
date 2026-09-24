@@ -1,9 +1,11 @@
 import http from 'http';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { config } from './config.js';
 import { initDatabase } from './db/database.js';
 import { handleApiRequest, sendJson } from './routes/apiRouter.js';
+import { realtime } from './realtime.js';
 
 // Mapa de tipos MIME para archivos estáticos
 const MIME_TYPES = {
@@ -101,11 +103,34 @@ const server = http.createServer(async (req, res) => {
   serveStaticFile(req, res, parsedUrl.pathname);
 });
 
+// Habilitar tiempo real multi-dispositivo sobre el mismo servidor HTTP
+realtime.init(server);
+
 // Arrancar servidor
 server.listen(config.port, config.host, () => {
   console.log(`====================================================`);
   console.log(`🍰 Panel de Control de Mesas - Pastelería San José`);
   console.log(`🚀 Servidor ejecutándose en: http://localhost:${config.port}`);
   console.log(`📱 Diseñado para pantalla táctil (PWA Touch-First)`);
+  console.log(`🌐 WebSocket en: ws://<ip-local>:${config.port}`);
+  const ips = getLanAddresses();
+  if (ips.length) {
+    console.log(`🔗 Accede desde otros dispositivos de la red con:`);
+    ips.forEach((ip) => console.log(`   http://${ip}:${config.port}`));
+  }
   console.log(`====================================================`);
 });
+
+// Lista las direcciones IPv4 locales para conectar otros dispositivos
+function getLanAddresses() {
+  const result = [];
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const net of interfaces[name] || []) {
+      if (net.family === 'IPv4' && !net.internal) {
+        result.push(net.address);
+      }
+    }
+  }
+  return result;
+}

@@ -151,5 +151,60 @@ export const api = {
    */
   async getLogs(limit = 30) {
     return this.request(`/logs?limit=${limit}`);
+  },
+
+  // ==========================================
+  // SEGURIDAD / ACCESO POR PIN
+  // ==========================================
+
+  /**
+   * Verifica el PIN de acceso (acepta la clave maestra para recuperar acceso)
+   */
+  async verifyPin(pin) {
+    return this.request('/auth/pin', {
+      method: 'POST',
+      body: JSON.stringify({ pin })
+    });
+  },
+
+  /**
+   * Autentica únicamente con la clave maestra (autorización administrativa)
+   */
+  async verifyMaster(masterKey) {
+    return this.request('/auth/master', {
+      method: 'POST',
+      body: JSON.stringify({ masterKey })
+    });
+  },
+
+  /**
+   * Cambia la clave de acceso autenticando con la clave maestra
+   */
+  async changePin(masterKey, newPin) {
+    return this.request('/auth/pin', {
+      method: 'PUT',
+      body: JSON.stringify({ masterKey, newPin })
+    });
+  },
+
+  // ==========================================
+  // ACCESOS RÁPIDOS (MONTOS DE BOTONES +)
+  // ==========================================
+
+  /**
+   * Obtiene los montos de los botones de acceso rápido
+   */
+  async getQuickAmounts() {
+    return this.request('/config/quick-amounts');
+  },
+
+  /**
+   * Actualiza los montos de acceso rápido
+   */
+  async setQuickAmounts(amounts) {
+    return this.request('/config/quick-amounts', {
+      method: 'PUT',
+      body: JSON.stringify({ amounts })
+    });
   }
 };

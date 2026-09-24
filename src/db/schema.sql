@@ -38,3 +38,9 @@ CREATE INDEX IF NOT EXISTS idx_logs_mesa_id ON logs_estados(mesa_id);
 CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON logs_estados(timestamp DESC);
 CREATE INDEX IF NOT EXISTS idx_productos_activo ON productos(activo);
 CREATE INDEX IF NOT EXISTS idx_productos_categoria ON productos(categoria);
+
+-- Tabla de Configuración de la Aplicación (seguridad/PIN)
+CREATE TABLE IF NOT EXISTS config_app (
+    clave TEXT PRIMARY KEY,
+    valor TEXT NOT NULL
+);

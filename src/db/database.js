@@ -77,4 +77,10 @@ export function initDatabase() {
   } else {
     console.log(`[DB] Catálogo listo con ${countProd} productos.`);
   }
+
+  // 3. Verificar clave de acceso por defecto (seguridad PIN)
+  const insertPin = db.prepare(
+    "INSERT OR IGNORE INTO config_app (clave, valor) VALUES ('access_pin', '123456')"
+  );
+  insertPin.run();
 }

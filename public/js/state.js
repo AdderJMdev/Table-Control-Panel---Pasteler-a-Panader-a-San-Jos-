@@ -14,9 +14,11 @@ class StateManager {
     this.state = {
       mesas: [],
       productos: [],
+      quickAmounts: [],
       selectedMesa: null,
       filter: 'TODAS', // TODAS, LIBRE, OCUPADA, CUENTA_PEDIDA, RESERVADA
       isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
+      wsStatus: { connected: false, devices: null },
       lastUpdated: null,
       loading: false,
       clockFormat: savedFormat, // '24h' o '12h'
@@ -81,6 +83,11 @@ class StateManager {
     this.setState({ productos });
   }
 
+  // Helpers de Accesos Rápidos
+  setQuickAmounts(quickAmounts) {
+    this.setState({ quickAmounts });
+  }
+
   addProducto(producto) {
     this.setState({
       productos: [...this.state.productos, producto]
@@ -119,6 +126,10 @@ class StateManager {
 
   setOnline(isOnline) {
     this.setState({ isOnline });
+  }
+
+  setWsStatus(wsStatus) {
+    this.setState({ wsStatus });
   }
 
   setLoading(loading) {

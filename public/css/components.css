@@ -376,6 +376,7 @@
    ========================================================== */
 .settings-tabs {
   display: flex;
+  flex-wrap: wrap;
   background-color: var(--bg-secondary);
   border-bottom: 2px solid var(--border-color);
   padding: 0 16px;
@@ -1003,4 +1004,238 @@
   font-size: 0.78rem;
   color: var(--text-secondary);
   font-weight: 600;
+}
+
+/* ==========================================================
+   PANTALLA DE BLOQUEO POR PIN (ACCESO TÁCTIL)
+   Teclado numérico grande (mínimo 60px x 60px)
+   ========================================================== */
+.pin-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+}
+
+.pin-screen.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.pin-screen-card {
+  width: 100%;
+  max-width: 360px;
+  background-color: var(--bg-surface);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.pin-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.pin-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-white);
+}
+
+.pin-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.pin-dots {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  min-height: 22px;
+  align-items: center;
+}
+
+.pin-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+  background-color: transparent;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.pin-dot.filled {
+  background-color: var(--color-libre-light);
+  border-color: var(--color-libre-light);
+}
+
+.pin-screen.is-error .pin-dot.filled {
+  background-color: var(--color-ocupada-light);
+  border-color: var(--color-ocupada-light);
+}
+
+.pin-error {
+  font-size: 0.85rem;
+  color: var(--color-ocupada-light);
+  font-weight: 700;
+  min-height: 20px;
+  text-align: center;
+}
+
+.pin-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+.pin-key {
+  min-height: 72px;
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
+}
+
+.pin-key:active {
+  transform: scale(0.95);
+  background-color: var(--color-libre-dark);
+  color: #fff;
+}
+
+.pin-key:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.pin-key-action {
+  color: var(--text-secondary);
+}
+
+.pin-cancel-btn {
+  width: 100%;
+  min-height: 48px;
+  border-radius: var(--radius-md);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.pin-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Formulario de cambio de clave (pestaña Seguridad) */
+.pin-change-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.pin-change-form .input-touch {
+  width: 100%;
+  text-align: center;
+  letter-spacing: 6px;
+  font-weight: 800;
+  font-size: 1.15rem;
+}
+
+/* ========================================
+   Botones de Acceso Rápido (Montos +S/)
+   ======================================== */
+.quick-amounts-container {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-quick-amount {
+  flex: 1;
+  min-height: 44px;
+  padding: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-white);
+}
+
+.btn-quick-amount:active {
+  background-color: var(--color-libre-dark);
+  border-color: var(--color-libre);
+}
+
+/* ========================================
+   Edición de Montos Rápidos (Ajustes)
+   ======================================== */
+.quick-amount-edit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.quick-amount-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.quick-amount-edit-row .quick-amount-edit-suffix {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+  min-width: 26px;
+}
+
+.quick-amount-edit-row .quick-amount-input {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-weight: 800;
+}
+
+.quick-amount-edit-row .quick-amount-edit-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Ocultar flechas nativas de los inputs numéricos para un look táctil limpio */
+.quick-amount-input::-webkit-outer-spin-button,
+.quick-amount-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.quick-amount-input {
+  -moz-appearance: textfield;
 }

@@ -1,5 +1,7 @@
 import { api } from './api.js';
 import { store } from './state.js';
+import { realtimeClient } from './realtime.js';
+import { pinScreen } from './components/pinScreen.js';
 import { TableGrid } from './components/tableGrid.js';
 import { ActionModal, showToast } from './components/actionModal.js';
 import { SettingsModal } from './components/settingsModal.js';
@@ -19,6 +21,26 @@ class App {
     this.clockEl = document.getElementById('live-clock');
     this.onlineIndicator = document.getElementById('online-indicator');
     this.onlineText = document.getElementById('online-text');
+  }
+
+  /**
+   * Desbloqueo de la app: exige el PIN de acceso (o clave maestra) una vez
+   * por sesión antes de inicializar la interfaz.
+   */
+  async boot() {
+    const alreadyUnlocked = sessionStorage.getItem('san_jose_unlocked') === '1';
+    if (!alreadyUnlocked) {
+      try {
+        await pinScreen.requestPin({
+          subtitle: 'Ingrese su PIN de acceso',
+          validate: (pin) => api.verifyPin(pin).then(() => true)
+        });
+        sessionStorage.setItem('san_jose_unlocked', '1');
+      } catch (err) {
+        console.warn('[App] Error durante autenticación:', err.message);
+      }
+    }
+    await this.init();
   }
 
   async init() {
@@ -45,25 +67,29 @@ class App {
     // 4. Suscribirse a cambios en el Store reactivo
     store.subscribe((state) => {
       this.tableGrid.render(state.mesas, state.filter);
-      this.updateOnlineStatus(state.isOnline);
+      this.updateOnlineStatus(state);
       if (this.updateClockDisplay) {
         this.updateClockDisplay();
       }
     });
 
-    // 5. Configurar eventos de conectividad
+    // 5. Activar sincronización en tiempo real entre dispositivos (WebSocket)
+    realtimeClient.connect();
+
+    // 6. Configurar eventos de conectividad
     this.setupEvents();
 
-    // 6. Iniciar reloj en tiempo real
+    // 7. Iniciar reloj en tiempo real
     this.startClock();
 
-    // 7. Registrar Service Worker para soporte PWA Offline
+    // 8. Registrar Service Worker para soporte PWA Offline
     this.registerServiceWorker();
 
-    // 8. Cargar datos iniciales (Mesas y Productos del Catálogo)
+    // 9. Cargar datos iniciales (Mesas, Productos y Montos Rápidos)
     await Promise.all([
       this.refreshMesas(false),
-      this.refreshProductos()
+      this.refreshProductos(),
+      this.refreshQuickAmounts()
     ]);
   }
 
@@ -112,6 +138,18 @@ class App {
     }
   }
 
+  /**
+   * Carga los montos de los botones de acceso rápido
+   */
+  async refreshQuickAmounts() {
+    try {
+      const amounts = await api.getQuickAmounts();
+      store.setQuickAmounts(amounts);
+    } catch (err) {
+      console.warn('[App] No se pudieron cargar montos rápidos:', err);
+    }
+  }
+
   startClock() {
     this.updateClockDisplay = () => {
       if (this.clockEl) {
@@ -140,15 +178,29 @@ class App {
     setInterval(this.updateClockDisplay, 1000);
   }
 
-  updateOnlineStatus(isOnline) {
-    if (this.onlineIndicator && this.onlineText) {
-      if (isOnline) {
-        this.onlineIndicator.className = 'online-dot';
-        this.onlineText.textContent = 'Servidor Local Conectado';
+  updateOnlineStatus(state) {
+    if (!this.onlineIndicator || !this.onlineText) return;
+
+    const { isOnline, wsStatus } = state;
+    const wsConnected = !!wsStatus?.connected;
+
+    if (!isOnline) {
+      this.onlineIndicator.className = 'online-dot offline-dot';
+      this.onlineText.textContent = 'Modo Desconectado';
+      return;
+    }
+
+    if (wsConnected) {
+      this.onlineIndicator.className = 'online-dot';
+      const devices = wsStatus.devices;
+      if (devices && devices > 1) {
+        this.onlineText.textContent = `Servidor Local · ${devices} dispositivos`;
       } else {
-        this.onlineIndicator.className = 'online-dot offline-dot';
-        this.onlineText.textContent = 'Modo Desconectado';
+        this.onlineText.textContent = 'Servidor Local Conectado';
       }
+    } else {
+      this.onlineIndicator.className = 'online-dot offline-dot';
+      this.onlineText.textContent = 'Conectando al servidor...';
     }
   }
 
@@ -167,8 +219,8 @@ class App {
   }
 }
 
-// Iniciar aplicación al cargar el DOM
+// Iniciar aplicación al cargar el DOM (primero desbloquear con PIN)
 document.addEventListener('DOMContentLoaded', () => {
   const app = new App();
-  app.init();
+  app.boot();
 });
