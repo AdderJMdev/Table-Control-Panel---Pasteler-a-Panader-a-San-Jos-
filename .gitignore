@@ -3,3 +3,7 @@ san_jose.db-shm
 san_jose.db-wal
 .DS_Store
 *.log
+# Portabilidad Windows
+dist/
+config.local.json
+server.log

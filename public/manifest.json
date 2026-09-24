@@ -1,13 +1,27 @@
 {
+  "id": "/",
   "name": "Pastelería San José - Control de Mesas",
   "short_name": "Mesas San José",
   "description": "Sistema de Control de Mesas para Cafetería Pastelería San José (Touch-First)",
+  "lang": "es",
   "start_url": "/",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#121418",
   "theme_color": "#1e222b",
   "icons": [
+    {
+      "src": "/assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
     {
       "src": "/assets/icons/icon-192.svg",
       "sizes": "192x192",

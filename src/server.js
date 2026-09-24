@@ -2,6 +2,7 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
+import { exec } from 'child_process';
 import { config } from './config.js';
 import { initDatabase } from './db/database.js';
 import { handleApiRequest, sendJson } from './routes/apiRouter.js';
@@ -20,6 +21,39 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon',
   '.webmanifest': 'application/manifest+json'
 };
+
+/**
+ * Log a consola y a server.log (junto a la app) para diagnóstico en Windows
+ * cuando el servidor corre oculto (sin ventana de consola).
+ */
+function writeLog(message) {
+  const line = `[${new Date().toISOString()}] ${message}`;
+  console.log(line);
+  try {
+    fs.appendFileSync(path.join(config.appRoot, 'server.log'), `${line}\n`);
+  } catch {/* El log a archivo es un extra opcional */}
+}
+
+/**
+ * Abre el navegador por defecto en la URL del panel (solo Windows).
+ */
+function openBrowser() {
+  const url = `http://localhost:${config.port}`;
+  exec(`cmd /c start "" "${url}"`, (err) => {
+    if (err) writeLog(`[ERROR] No se pudo abrir el navegador: ${err.message}`);
+  });
+}
+
+/**
+ * Cierre limpio del servidor (Ctrl+C, SIGTERM de la tarea programada, etc.)
+ */
+function shutdown() {
+  writeLog('[Servidor] Deteniéndose...');
+  server.close(() => process.exit(0));
+  setTimeout(() => process.exit(0), 2000).unref();
+}
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
 
 /**
  * Servidor de archivos estáticos nativo para frontend Vanilla PWA (RNF-04, RNF-05)
@@ -106,19 +140,38 @@ const server = http.createServer(async (req, res) => {
 // Habilitar tiempo real multi-dispositivo sobre el mismo servidor HTTP
 realtime.init(server);
 
+// Si el puerto configurado ya está en uso, salir con un mensaje claro
+// (la app instalada del navegador apunta a una URL fija, por eso no se
+//  cambia de puerto automáticamente).
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    writeLog(`[ERROR] El puerto ${config.port} ya está en uso por otro programa.`);
+    writeLog(`        Cierra ese programa o cambia el puerto en config.local.json`);
+    writeLog(`        (junto a la aplicación) y vuelve a iniciar el servidor.`);
+  } else {
+    writeLog(`[ERROR] Fallo del servidor: ${err.message}`);
+  }
+  process.exit(1);
+});
+
 // Arrancar servidor
 server.listen(config.port, config.host, () => {
-  console.log(`====================================================`);
-  console.log(`🍰 Panel de Control de Mesas - Pastelería San José`);
-  console.log(`🚀 Servidor ejecutándose en: http://localhost:${config.port}`);
-  console.log(`📱 Diseñado para pantalla táctil (PWA Touch-First)`);
-  console.log(`🌐 WebSocket en: ws://<ip-local>:${config.port}`);
+  writeLog(`====================================================`);
+  writeLog(`🍰 Panel de Control de Mesas - Pastelería San José`);
+  writeLog(`🚀 Servidor ejecutándose en: http://localhost:${config.port}`);
+  writeLog(`📱 Diseñado para pantalla táctil (PWA Touch-First)`);
+  writeLog(`🌐 WebSocket en: ws://<ip-local>:${config.port}`);
   const ips = getLanAddresses();
   if (ips.length) {
-    console.log(`🔗 Accede desde otros dispositivos de la red con:`);
-    ips.forEach((ip) => console.log(`   http://${ip}:${config.port}`));
+    writeLog(`🔗 Accede desde otros dispositivos de la red con:`);
+    ips.forEach((ip) => writeLog(`   http://${ip}:${config.port}`));
   }
-  console.log(`====================================================`);
+  writeLog(`====================================================`);
+
+  // En Windows portable: abrir el navegador automáticamente si está activado
+  if (config.autoOpenBrowser && process.platform === 'win32') {
+    openBrowser();
+  }
 });
 
 // Lista las direcciones IPv4 locales para conectar otros dispositivos

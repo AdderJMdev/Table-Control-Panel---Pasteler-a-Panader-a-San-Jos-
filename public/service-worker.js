@@ -18,6 +18,8 @@ const STATIC_ASSETS = [
   '/js/components/settingsModal.js',
   '/js/components/logsModal.js',
   '/js/components/drawerPanel.js',
+  '/assets/icons/icon-192.png',
+  '/assets/icons/icon-512.png',
   '/assets/icons/icon-192.svg',
   '/assets/icons/icon-512.svg'
 ];
